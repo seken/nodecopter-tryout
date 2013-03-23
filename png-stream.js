@@ -12,50 +12,11 @@ TOP=0
 client = arDrone.createClient()
 client.config('video:video_channel', TOP);
 client.config('general:navdata_demo', 'FALSE');
+client.config('detect:enemy_colors', '3');
 client.config('detect:detect_type', '10');
 client.config('detect:detections_select_h', '1');
 navdata = arDrone.createUdpNavdataStream()
 
-
-client.on('navdata', function(data) {
-	try {
-//		console.log(data)
-//    console.log('Battery: ' + data.demo.batteryPercentage)
-//    console.log('Alt: ' + data.demo.altitude)
-	console.log(data.visionDetect);
-
-	if (data.visionDetect.nbDetected > 0) {
-		vd = data.visionDetect
-		if (vd.dist[0] > 60) {
-			console.log('forwards' + vd.dist[0])
-			client.front(0.1);
-		} else if (vd.dist[0] < 50)  {
-			console.log('back')
-			client.back(0.1);
-		} else {
-			console.log('@')
-			client.front(0);
-		}
-
-		if (vd.yc > 550) {
-			client.down(0.1);
-		} else if (vd.yc < 450) {
-			client.up(0.1);
-		} else {
-			client.up(0);
-		}
-
-		if (vd.xc > 600) {
-			client.right(0.1);
-		} else if (vd.xc < 400) {
-			client.left(0.1);
-		} else {
-			client.left(0);
-		}
-
-	}
-	} catch (error) {}
-});
 
 
 var net=require('net');
@@ -94,15 +55,59 @@ server.listen(8080, function() {
   console.log('Serving latest png on port 8080 ...');
 });
 
-/*
+client.stop();
 client.takeoff();
+client.after(2000, function() {
+	client.on('navdata', function(data) {
+		try {
+		//		console.log(data)
+		    console.log('Battery: ' + data.demo.batteryPercentage)
+		//    console.log('Alt: ' + data.demo.altitude)
+		//	console.log(data.visionDetect);
 
-client.after(20000, function() {
-//	client.forward(0.01);
-	client.stop();
-	client.land();
+			if (data.visionDetect.nbDetected > 0) {
+				vd = data.visionDetect
+				if (vd.dist[0] > 60) {
+					console.log('forwards' + vd.dist[0])
+					client.stop();
+					client.front(0.1);
+					//client.stop();
+				} else if (vd.dist[0] < 50)  {
+					console.log('back')
+					client.stop()
+					client.back(0.1);
+				} else {
+					console.log('@')
+		//			client.front(0);
+					client.stop()
+				}
+	/*
+				if (vd.yc > 550) {
+					client.down(0.2);
+				} else if (vd.yc < 450) {
+					client.up(0.2);
+				} else {
+					client.up(0);
+				}
+
+				if (vd.xc > 600) {
+					client.right(0.2);
+				} else if (vd.xc < 400) {
+					client.left(0.2);
+				} else {
+					client.left(0);
+				}
+	*/
+			} else {
+				console.log('none found')
+				client.stop()
+				//client.up(0);
+				//client.front(0);
+				client.clockwise(0.1);
+			}
+		} catch (error) {}
+
+	});
 });
 
-client.after(500, function() {
-});
-*/
+
